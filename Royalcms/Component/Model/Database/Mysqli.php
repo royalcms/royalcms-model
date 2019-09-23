@@ -2,6 +2,7 @@
 
 use Exception;
 use mysqli as PhpMysqli;
+use PDO;
 
 /**
  * mysqli数据库驱动
@@ -64,6 +65,8 @@ class Mysqli extends Database
             self::$connect_pool[$this->hostkey] = $link;
             $this->link = $link;
             $this->set_charset();
+
+            $this->setModes($this->link, $this->config);
         }
         
         return $this->link;
@@ -76,6 +79,48 @@ class Mysqli extends Database
     {
         $this->link->set_charset($this->config['charset']);
         $this->link->query("SET NAMES ".$this->config['charset']);
+    }
+
+    protected function setModes($connection, array $config)
+    {
+        if (isset($config['modes'])) {
+            $this->setCustomModes($connection, $config);
+        } elseif (isset($config['strict'])) {
+            if ($config['strict']) {
+                $connection->query($this->strictMode($connection))->execute();
+            } else {
+                $connection->query("set session sql_mode='NO_ENGINE_SUBSTITUTION'");
+            }
+        }
+    }
+
+    /**
+     * Get the query to enable strict mode.
+     *
+     * @param  \PDO  $connection
+     * @return string
+     */
+    protected function strictMode($connection)
+    {
+        if (version_compare($connection->version(), '8.0.11') >= 0) {
+            return "set session sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'";
+        }
+
+        return "set session sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'";
+    }
+
+    /**
+     * Set the custom modes on the connection.
+     *
+     * @param  \PDO  $connection
+     * @param  array  $config
+     * @return void
+     */
+    protected function setCustomModes($connection, array $config)
+    {
+        $modes = implode(',', $config['modes']);
+
+        $connection->query("set session sql_mode='{$modes}'");
     }
 
     /**
