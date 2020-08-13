@@ -2,7 +2,7 @@
 
 use Royalcms\Component\Support\Facades\Config;
 use RC_Hook;
-use Royalcms\Component\Foundation\Loader;
+use RC_Loader;
 use Royalcms\Component\Foundation\RoyalcmsObject;
 
 class ModelManage extends RoyalcmsObject {
@@ -69,9 +69,9 @@ class ModelManage extends RoyalcmsObject {
         }
 
         if ($m != Config::get('system.admin_entrance') && $m != 'system') {
-            self::$_cache_model[$model] = Loader::load_app_model($model_file_name, $m);
+            self::$_cache_model[$model] = RC_Loader::load_app_model($model_file_name, $m);
         } else {
-            self::$_cache_model[$model] = Loader::load_sys_model($model_file_name);
+            self::$_cache_model[$model] = RC_Loader::load_sys_model($model_file_name);
         }
 
         return self::$_cache_model[$model];
