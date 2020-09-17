@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model;
+<?php
+
+namespace Royalcms\Component\Model;
 
 /**
  * 关联模型
@@ -7,7 +9,7 @@
  * @subpackage driver
  */
 
-class Relation extends Model
+class RelationModel extends Model
 {
 
     /**
