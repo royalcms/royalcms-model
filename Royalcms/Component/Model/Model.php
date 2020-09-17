@@ -3,7 +3,12 @@
 namespace Royalcms\Component\Model;
 
 use Royalcms\Component\Model\Database\DatabaseFactory;
+use Royalcms\Component\Model\Traits\DatabaseTrait;
 use Royalcms\Component\Model\Traits\ModelVersion;
+use Royalcms\Component\Model\Traits\TableFieldTrait;
+use Royalcms\Component\Model\Traits\TableTrait;
+use Royalcms\Component\Model\Traits\TransactionTrait;
+use Royalcms\Component\Model\Traits\TriggerTrait;
 
 /**
  * 数据模型基类
@@ -913,7 +918,7 @@ class Model
     {
         return $this->db->all_sqls();
     }
-    
+
     /**
      * 执行SQL语句
      *
