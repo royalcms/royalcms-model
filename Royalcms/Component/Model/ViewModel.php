@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model;
+<?php
+
+namespace Royalcms\Component\Model;
 
 /**
  * 视图模型处理类
