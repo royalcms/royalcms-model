@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model\Database;
+<?php
+
+namespace Royalcms\Component\Model\Database;
 
 use Exception;
 use mysqli as PhpMysqli;
@@ -10,16 +12,15 @@ use PDO;
  * @package Royalcms
  * @subpackage Component
  */
-
 class Mysqli extends Database
 {
     /**
      * 数据库连接资源句柄
      */
     public $link;
-    
+
     protected $hostkey;
-    
+
     /**
      * 是否连接
      *
@@ -42,7 +43,7 @@ class Mysqli extends Database
     {
         $this->close();
     }
-    
+
     /**
      * 真正开启数据库连接
      *
@@ -54,21 +55,21 @@ class Mysqli extends Database
         if (array_get(self::$connect_pool, $this->hostkey)) {
             $this->link = self::$connect_pool[$this->hostkey];
         } else {
-            $port = array_get($this->config, 'port', 3306);
+            $port   = array_get($this->config, 'port', 3306);
             $socket = array_get($this->config, 'unix_socket');
-            $link = new PhpMysqli($this->config['host'], $this->config['username'], $this->config['password'], $this->config['database'], $port, $socket);
+            $link   = new PhpMysqli($this->config['host'], $this->config['username'], $this->config['password'], $this->config['database'], $port, $socket);
             // 连接错误
             if ($link->connect_errno) {
                 $this->error($link->connect_error);
                 return false;
             }
             self::$connect_pool[$this->hostkey] = $link;
-            $this->link = $link;
+            $this->link                         = $link;
             $this->set_charset();
 
             $this->setModes($this->link, $this->config);
         }
-        
+
         return $this->link;
     }
 
@@ -78,7 +79,7 @@ class Mysqli extends Database
     private function set_charset()
     {
         $this->link->set_charset($this->config['charset']);
-        $this->link->query("SET NAMES ".$this->config['charset']);
+        $this->link->query("SET NAMES " . $this->config['charset']);
     }
 
     protected function setModes($connection, array $config)
@@ -97,7 +98,7 @@ class Mysqli extends Database
     /**
      * Get the query to enable strict mode.
      *
-     * @param  \PDO  $connection
+     * @param \PDO $connection
      * @return string
      */
     protected function strictMode($connection)
@@ -112,8 +113,8 @@ class Mysqli extends Database
     /**
      * Set the custom modes on the connection.
      *
-     * @param  \PDO  $connection
-     * @param  array  $config
+     * @param \PDO $connection
+     * @param array $config
      * @return void
      */
     protected function setCustomModes($connection, array $config)
@@ -152,7 +153,7 @@ class Mysqli extends Database
     {
         return $this->link->real_escape_string($str);
     }
-    
+
     /**
      * 提供一个事务
      *
@@ -162,7 +163,7 @@ class Mysqli extends Database
     {
         $this->link->commit();
     }
-    
+
     /**
      * 回滚事务
      *
@@ -172,7 +173,7 @@ class Mysqli extends Database
     {
         $this->link->rollback();
     }
-    
+
     /**
      * 自动提交模式true开启false关闭
      *
@@ -181,9 +182,9 @@ class Mysqli extends Database
     public function begin_trans()
     {
         $stat = func_get_arg(0);
-        $this->link->autocommit(! $stat);
+        $this->link->autocommit(!$stat);
     }
-    
+
     /**
      * 插入数据失败时自动转为更新数据
      *
@@ -200,7 +201,7 @@ class Mysqli extends Database
                 $values[] = "'" . $field_values[$value] . "'";
             }
         }
-    
+
         $sets = array();
         foreach ($update_values as $key => $value) {
             if (array_key_exists($key, $field_values) == true) {
@@ -213,25 +214,25 @@ class Mysqli extends Database
                 $sets[] = $key . " = '" . $value . "'";
             }
         }
-    
-        $sql = '';
+
+        $sql          = '';
         $primary_keys = array(
             $this->opt['primary']
         );
         if (empty($primary_keys)) {
-            if (! empty($fields)) {
+            if (!empty($fields)) {
                 $sql = 'INSERT INTO ' . $this->opt['table'] . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $values) . ')';
             }
         } else {
             // mysql version >= 4.1
-            if (! empty($fields)) {
+            if (!empty($fields)) {
                 $sql = 'INSERT INTO ' . $this->opt['table'] . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $values) . ')';
-                if (! empty($sets)) {
+                if (!empty($sets)) {
                     $sql .= ' ON DUPLICATE KEY UPDATE ' . implode(', ', $sets);
                 }
             }
         }
-    
+
         if ($sql) {
             return $this->execute($sql);
         } else {
@@ -269,7 +270,7 @@ class Mysqli extends Database
      */
     public function query($sql)
     {
-        $options = \RC_Config::get('cache.query_cache');
+        $options    = \RC_Config::get('cache.query_cache');
         $cache_time = $this->cache_time ? $this->cache_time : intval($options['select_time']);
         if (defined('ROUTE_M') && defined('ROUTE_C') && defined('ROUTE_A')) {
             $cache_name = md5($sql . ROUTE_M . ROUTE_C . ROUTE_A);
@@ -285,10 +286,10 @@ class Mysqli extends Database
             }
         }
         // SQL发送失败
-        if (! $this->execute($sql)) {
+        if (!$this->execute($sql)) {
             return false;
         }
-        
+
         $list = array();
         while (($res = $this->fetch()) != false) {
             $list[] = $res;
@@ -296,7 +297,7 @@ class Mysqli extends Database
         if ($cache_time >= 0 && count($list) <= $options['select_length']) {
             \RC_Cache::query_cache_set($cache_name, $list, $cache_time);
         }
-        return is_array($list) && ! empty($list) ? $list : null;
+        return is_array($list) && !empty($list) ? $list : null;
     }
 
     /**
@@ -307,13 +308,13 @@ class Mysqli extends Database
     public function version()
     {
         $version_int = $this->link->server_version;
-        
-        $main_version = floor($version_int/10000);
-        
-        $minor_version = ltrim(floor(($version_int-$main_version*10000)/100), 0);
-        
-        $sub_version = ltrim($version_int-$main_version*10000-$minor_version*100, 0);
-        
+
+        $main_version = floor($version_int / 10000);
+
+        $minor_version = ltrim(floor(($version_int - $main_version * 10000) / 100), 0);
+
+        $sub_version = ltrim($version_int - $main_version * 10000 - $minor_version * 100, 0);
+
         return implode('.', array($main_version, $minor_version, $sub_version));
     }
 
@@ -325,10 +326,10 @@ class Mysqli extends Database
     protected function fetch()
     {
         $res = $this->last_query->fetch_assoc();
-        if (! MAGIC_QUOTES_GPC) {
+        if (!MAGIC_QUOTES_GPC) {
             $res = rc_stripslashes($res);
         }
-        if (! $res) {
+        if (!$res) {
             $this->result_free();
         }
         return $res;
@@ -343,7 +344,7 @@ class Mysqli extends Database
             $this->last_query->close();
         }
     }
-    
+
     /**
      * 释放连接资源
      *
@@ -360,7 +361,7 @@ class Mysqli extends Database
             }
         }
     }
-    
+
 }
 
 // end

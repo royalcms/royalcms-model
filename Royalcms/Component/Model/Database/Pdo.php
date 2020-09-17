@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model\Database;
+<?php
+
+namespace Royalcms\Component\Model\Database;
 
 use PDOException;
 
@@ -11,11 +13,11 @@ use PDOException;
 class Pdo extends Database
 {
 
-    protected static $is_connect = null; // 是否连接
-    public $link = null; // 数据库连接
-    private $PDOStatement = null; // 预声明
-    public $affected_rows; // 受影响条数
-    
+    protected static $is_connect   = null; // 是否连接
+    public           $link         = null; // 数据库连接
+    private          $PDOStatement = null; // 预声明
+    public           $affected_rows;       // 受影响条数
+
     /**
      * 构造函数
      */
@@ -35,7 +37,7 @@ class Pdo extends Database
     function connect_database()
     {
         if (is_null(self::$is_connect)) {
-            $dsn = "mysql:host=" . $this->config['host'] . ';dbname=' . $this->config['database'];
+            $dsn      = "mysql:host=" . $this->config['host'] . ';dbname=' . $this->config['database'];
             $username = $this->config['username'];
             $password = $this->config['password'];
             try {
@@ -55,7 +57,7 @@ class Pdo extends Database
     static private function set_charts()
     {
         $character = $this->config['charset'];
-        $sql = "SET character_set_connection=$character,character_set_results=$character,character_set_client=binary";
+        $sql       = "SET character_set_connection=$character,character_set_results=$character,character_set_client=binary";
         self::$is_connect->query($sql);
     }
 
@@ -101,7 +103,7 @@ class Pdo extends Database
         // 将SQL添加到调试DEBUG
         $this->debug($sql);
         // 释放结果
-        if (! $this->PDOStatement)
+        if (!$this->PDOStatement)
             $this->result_free();
         $this->PDOStatement = $this->link->prepare($sql);
         // 预准备失败
@@ -127,7 +129,7 @@ class Pdo extends Database
      */
     public function query($sql)
     {
-        $options = \RC_Config::get('cache.query_cache');
+        $options    = \RC_Config::get('cache.query_cache');
         $cache_time = $this->cache_time ? $this->cache_time : intval($options['select_time']);
         $cache_name = $sql . ROUTE_M . ROUTE_C . ROUTE_A;
         if ($cache_time >= 0) {
@@ -139,7 +141,7 @@ class Pdo extends Database
             }
         }
         // 发送SQL
-        if (! $this->execute($sql)) {
+        if (!$this->execute($sql)) {
             return false;
         }
         $list = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
@@ -148,7 +150,7 @@ class Pdo extends Database
         if ($cache_time >= 0 && count($list) <= $options['select_length']) {
             \RC_Cache::query_cache_set($cache_name, $list, $cache_time);
         }
-        return is_array($list) && ! empty($list) ? $list : null;
+        return is_array($list) && !empty($list) ? $list : null;
     }
 
     /**
@@ -199,7 +201,7 @@ class Pdo extends Database
     public function close()
     {
         if (is_object($this->link)) {
-            $this->link = null;
+            $this->link       = null;
             self::$is_connect = null;
         }
     }
@@ -212,10 +214,10 @@ class Pdo extends Database
     protected function fetch()
     {
         $res = $this->last_query->fetch(PDO::FETCH_ASSOC);
-        if (! MAGIC_QUOTES_GPC) {
+        if (!MAGIC_QUOTES_GPC) {
             $res = rc_stripslashes($res);
         }
-        if (! $res) {
+        if (!$res) {
             $this->result_free();
         }
         return $res;

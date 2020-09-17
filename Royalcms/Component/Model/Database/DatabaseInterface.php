@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model\Database;
+<?php
+
+namespace Royalcms\Component\Model\Database;
 
 /**
  * 数据库操作接口
@@ -21,14 +23,14 @@ interface DatabaseInterface
     /**
      * 发送没有返回值的sql
      *
-     * @param string $sql            
+     * @param string $sql
      */
     public function execute($sql);
 
     /**
      * 有返回值的sql
      *
-     * @param string $sql            
+     * @param string $sql
      */
     public function query($sql);
 
@@ -65,7 +67,7 @@ interface DatabaseInterface
     /**
      * 数据安全处理
      *
-     * @param unknown $str            
+     * @param unknown $str
      */
     public function escape_string($str);
 }

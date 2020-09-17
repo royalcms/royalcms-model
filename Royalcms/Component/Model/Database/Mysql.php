@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model\Database;
+<?php
+
+namespace Royalcms\Component\Model\Database;
 
 use Exception;
 
@@ -17,7 +19,7 @@ final class Mysql extends Database
     public $link;
 
     protected $hostkey;
-    
+
     /**
      * 是否连接
      *
@@ -50,16 +52,16 @@ final class Mysql extends Database
             $this->link = self::$connect_pool[$this->hostkey];
         } else {
             $link = mysql_connect($this->config['host'], $this->config['username'], $this->config['password'], true);
-            if (! $link) {
+            if (!$link) {
                 $this->error('Can not connect to MySQL server');
                 return false;
             }
             self::$connect_pool[$this->hostkey] = $link;
-            $this->link = $link;
+            $this->link                         = $link;
             $this->set_charset();
         }
 
-        if ($this->config['database'] && ! mysql_select_db($this->config['database'], $this->link)) {
+        if ($this->config['database'] && !mysql_select_db($this->config['database'], $this->link)) {
             $this->error('Cannot use database ' . $this->config['database']);
             return false;
         }
@@ -68,7 +70,7 @@ final class Mysql extends Database
 
     private function set_charset()
     {
-        $charset = isset($this->config['charset']) ? $this->config['charset'] : '';
+        $charset   = isset($this->config['charset']) ? $this->config['charset'] : '';
         $serverset = $charset ? "character_set_connection='$charset',character_set_results='$charset',character_set_client=binary" : '';
         $serverset .= (empty($serverset) ? '' : ',') . " sql_mode='' ";
         $serverset && mysql_query("SET $serverset", self::$connect_pool[$this->hostkey]);
@@ -97,8 +99,8 @@ final class Mysql extends Database
     /**
      * 数据安全处理
      *
+     * @param string $str
      * @see database_interface::escape_string()
-     * @param string $str            
      */
     public function escape_string($str)
     {
@@ -138,8 +140,8 @@ final class Mysql extends Database
     /**
      * 插入数据失败时自动转为更新数据
      *
-     * @param array $field_values            
-     * @param array $update_values            
+     * @param array $field_values
+     * @param array $update_values
      * @return Ambigous <boolean, number>|boolean
      */
     public function auto_replace($field_values, $update_values)
@@ -151,7 +153,7 @@ final class Mysql extends Database
                 $values[] = "'" . $field_values[$value] . "'";
             }
         }
-        
+
         $sets = array();
         foreach ($update_values as $key => $value) {
             if (array_key_exists($key, $field_values) == true) {
@@ -162,25 +164,25 @@ final class Mysql extends Database
                 }
             }
         }
-        
-        $sql = '';
+
+        $sql          = '';
         $primary_keys = array(
             $this->opt['primary']
         );
         if (empty($primary_keys)) {
-            if (! empty($fields)) {
+            if (!empty($fields)) {
                 $sql = 'INSERT INTO ' . $this->opt['table'] . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $values) . ')';
             }
         } else {
             // mysql version >= 4.1
-            if (! empty($fields)) {
+            if (!empty($fields)) {
                 $sql = 'INSERT INTO ' . $this->opt['table'] . ' (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $values) . ')';
-                if (! empty($sets)) {
+                if (!empty($sets)) {
                     $sql .= ' ON DUPLICATE KEY UPDATE ' . implode(', ', $sets);
                 }
             }
         }
-        
+
         if ($sql) {
             return $this->execute($sql);
         } else {
@@ -191,18 +193,18 @@ final class Mysql extends Database
     /**
      * 执行SQL没有返回值
      *
-     * @param $sql 要执行的sql语句            
+     * @param $sql 要执行的sql语句
      * @see database_interface::execute()
      */
     public function execute($sql)
     {
         // 查询参数初始化
         $this->opt_init();
-        
+
         // 将SQL添加到调试DEBUG
         $this->debug($sql);
         is_resource($this->link) or $this->connect($this->table_name);
-        
+
         $this->last_query = mysql_query($sql, $this->link);
         if ($this->last_query) {
             // 自增id
@@ -226,7 +228,7 @@ final class Mysql extends Database
      */
     public function query($sql)
     {
-        $options = \RC_Config::get('cache.query_cache');
+        $options    = \RC_Config::get('cache.query_cache');
         $cache_time = $this->cache_time ? $this->cache_time : intval($options['select_time']);
         if (defined('ROUTE_M') && defined('ROUTE_C') && defined('ROUTE_A')) {
             $cache_name = md5($sql . ROUTE_M . ROUTE_C . ROUTE_A);
@@ -241,22 +243,22 @@ final class Mysql extends Database
                 return $result;
             }
         }
-        
+
         // SQL发送失败
-        if (! $this->execute($sql)) {
+        if (!$this->execute($sql)) {
             return false;
         }
-        
+
         $list = array();
         while (($res = $this->fetch()) != false) {
             $list[] = $res;
         }
-        
+
         if ($cache_time >= 0 && count($list) <= $options['select_length']) {
             \RC_Cache::query_cache_set($cache_name, $list, $cache_time);
         }
-        
-        return is_array($list) && ! empty($list) ? $list : null;
+
+        return is_array($list) && !empty($list) ? $list : null;
     }
 
     /**
@@ -276,10 +278,10 @@ final class Mysql extends Database
     protected function fetch()
     {
         $res = mysql_fetch_assoc($this->last_query);
-        if (! MAGIC_QUOTES_GPC) {
+        if (!MAGIC_QUOTES_GPC) {
             $res = rc_stripslashes($res);
         }
-        if (! $res) {
+        if (!$res) {
             $this->result_free();
         }
         return $res;
@@ -295,7 +297,7 @@ final class Mysql extends Database
         }
         $this->last_query = null;
     }
-    
+
     /**
      * 释放连接资源
      *

@@ -1,4 +1,6 @@
-<?php namespace Royalcms\Component\Model\Database;
+<?php
+
+namespace Royalcms\Component\Model\Database;
 
 /**
  * database_factory.class.php 数据库工厂类
@@ -25,7 +27,8 @@ final class DatabaseFactory
      * 构造函数
      */
     public function __construct()
-    {}
+    {
+    }
 
     /**
      * 析构函数
@@ -38,7 +41,7 @@ final class DatabaseFactory
     /**
      * 返回当前终级类对象的实例
      *
-     * @param $db_config 数据库配置            
+     * @param $db_config 数据库配置
      * @return object
      */
     public static function get_instance($db_config = array())
@@ -46,16 +49,16 @@ final class DatabaseFactory
         if (empty($db_config)) {
             $db_config = \RC_Config::get('database.connections');
         }
-        
+
         if (is_null(self::$db_factory)) {
             self::$db_factory = new self();
         }
-        
+
         if ($db_config != self::$db_factory->db_config) {
             self::$db_factory->db_config = array_merge($db_config, self::$db_factory->db_config);
         }
-        
-        if (! self::$db_factory) {
+
+        if (!self::$db_factory) {
             // 连接异常
             if (RC_DEBUG) {
                 rc_die("数据库连接出错了请检查配置文件中的参数");
@@ -71,17 +74,17 @@ final class DatabaseFactory
     /**
      * 获取数据库操作实例
      *
-     * @param $db_name 数据库配置名称            
+     * @param $db_name 数据库配置名称
      */
     public function get_database($db_name, $table_name = null)
     {
         if (empty($table_name)) {
-            $table_name = "empty";
+            $table_name   = "empty";
             $db_list_name = $db_name;
         } else {
             $db_list_name = $db_name . '_' . $table_name;
         }
-        if (! isset($this->db_list[$db_list_name]) || ! is_object($this->db_list[$db_list_name])) {
+        if (!isset($this->db_list[$db_list_name]) || !is_object($this->db_list[$db_list_name])) {
             $this->db_list[$db_list_name] = $this->connect($db_name, $table_name);
         }
         return $this->db_list[$db_list_name];
@@ -90,7 +93,7 @@ final class DatabaseFactory
     /**
      * 链接数据库
      *
-     * @param $db_name 数据库配置名称            
+     * @param $db_name 数据库配置名称
      * @return object
      */
     public function connect($db_name, $table_name)
@@ -102,14 +105,14 @@ final class DatabaseFactory
         } else {
             $object->connect($table_name);
         }
-        
+
         return $object;
     }
 
     /**
      * 获取数据库驱动类型
      *
-     * @param unknown $type            
+     * @param unknown $type
      * @return $object
      */
     private function get_driver($driver)
@@ -123,8 +126,8 @@ final class DatabaseFactory
         } else {
             $object = null;
         }
-        
-        if (! $object) {
+
+        if (!$object) {
             if (RC_DEBUG) {
                 rc_die("数据库连接出错了请检查配置文件中的参数", false);
             } else {
